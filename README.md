@@ -1,0 +1,41 @@
+# ⛓️ İTÜ Blockchain Simülasyonu
+
+Bu proje, **İTÜ Blockchain Kulübü** tarafından verilen ödev kapsamında geliştirilmiş, terminal tabanlı basit bir blokzincir simülasyonudur.
+
+Projenin amacı; blokzincirlerin temel çalışma prensiplerini (Madencilik, Transferler, Blok Yapısı) JavaScript ve Node.js kullanarak pratik etmektir.
+
+## 📌 Neler Yapabiliyor?
+
+Proje, temel bir blokzincir ağını simüle eder ve şu özelliklere sahiptir:
+
+* **Proof of Work (Madencilik):** Blokların işlemci gücü simülasyonu ile (gecikmeli olarak) oluşturulması.
+* **Proof of Stake (Staking):** Blokların bakiye miktarına göre seçilen doğrulayıcılar tarafından onaylanması.
+* **Basit Piyasa Mantığı:** İşlem yapıldıkça coin fiyatının değiştiği temel bir fiyatlandırma algoritması (x*y=k).
+* **Transfer Simülasyonu:** ITÜCOIN, WBTC, USDT gibi varlıkların temsili transferi ve kayıt altına alınması.
+* **Kalıcılık:** Verilerin `data.json` dosyasında tutulması ve program kapansa bile silinmemesi.
+* **Sıfırlama:** Tek tuşla tüm zinciri temizleme (Reset) özelliği.
+
+## 🚀 Kurulum ve Çalıştırma
+
+Projeyi bilgisayarınızda denemek için:
+
+1.  Projeyi indirin:
+    ```bash
+    git clone [https://github.com/huseyinatakankubat/blockchain-simulasyonu.git](https://github.com/huseyinatakankubat/blockchain-simulasyonu.git)
+    ```
+2.  Klasöre girin ve paketleri yükleyin:
+    ```bash
+    cd blockchain-simulasyonu
+    npm install
+    ```
+3.  Kısayol oluşturun (İsteğe bağlı):
+    ```bash
+    sudo npm link
+    ```
+
+## 💻 Nasıl Kullanılır?
+
+Terminale şu komutu yazarak simülasyonu başlatabilirsiniz:
+
+```bash
+ituchain
