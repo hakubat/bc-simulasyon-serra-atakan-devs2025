@@ -21,7 +21,7 @@ Projeyi kendi bilgisayarınızda çalıştırmak için:
 
 1.  Projeyi klonlayın:
     ```bash
-    git clone [https://github.com/hakubat/bc-simulasyon-serra-atakan-devs2025.git](https://github.com/hakubat/bc-simulasyon-serra-atakan-devs2025.git)
+    git clone https://github.com/hakubat/bc-simulasyon-serra-atakan-devs2025.git
     ```
 2.  Proje klasörüne girin:
     ```bash
