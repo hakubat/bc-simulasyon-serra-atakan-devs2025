@@ -1,0 +1,24 @@
+[
+    {
+        "index": 0,
+        "timestamp": "01/01/2025",
+        "data": "Genesis Block",
+        "previousHash": "0",
+        "hash": "01db86e9f6d232ada185364d5b21cdb128c8eb56b86e67c5ec7f4e766589af24"
+    },
+    {
+        "index": 1,
+        "timestamp": "11/26/2025, 7:50:20 PM",
+        "data": "Serra -> Atakan 25 coin",
+        "previousHash": "01db86e9f6d232ada185364d5b21cdb128c8eb56b86e67c5ec7f4e766589af24",
+        "hash": "bd48c67b82a9ce528c7436773e6caf7d9c982b566cc181cb9ec7d0a7fef5ee9f"
+    },
+    {
+        "index": 2,
+        "timestamp": "11/26/2025, 7:53:50 PM",
+        "data": "Serra -> Atakan 20 BTC",
+        "previousHash": "bd48c67b82a9ce528c7436773e6caf7d9c982b566cc181cb9ec7d0a7fef5ee9f",
+        "hash": "0062b3f50d147e92624615a9667eb639af50b069308b33843bc3cb0c6a8a7da5",
+        "nonce": 754
+    }
+]
