@@ -17,18 +17,21 @@ Proje, temel bir blokzincir ağını simüle eder ve şu özelliklere sahiptir:
 
 ## 🚀 Kurulum ve Çalıştırma
 
-Projeyi bilgisayarınızda denemek için:
+Projeyi kendi bilgisayarınızda çalıştırmak için:
 
-1.  Projeyi indirin:
+1.  Projeyi klonlayın:
     ```bash
-    git clone [https://github.com/huseyinatakankubat/blockchain-simulasyonu.git](https://github.com/huseyinatakankubat/blockchain-simulasyonu.git)
+    git clone [https://github.com/hakubat/bc-simulasyon-serra-atakan-devs2025.git](https://github.com/hakubat/bc-simulasyon-serra-atakan-devs2025.git)
     ```
-2.  Klasöre girin ve paketleri yükleyin:
+2.  Proje klasörüne girin:
     ```bash
-    cd blockchain-simulasyonu
+    cd bc-simulasyon-serra-atakan-devs2025
+    ```
+3.  Gerekli paketleri yükleyin:
+    ```bash
     npm install
     ```
-3.  Kısayol oluşturun (İsteğe bağlı):
+4.  Sisteme entegre edin (Önerilen):
     ```bash
     sudo npm link
     ```
