@@ -1,32 +1,31 @@
 const crypto = require('crypto');
 
 class Block {
-    constructor(index, timestamp, data, previousHash = '') {
+    // Hem PoS (validator) hem PoW (nonce) desteği var
+    constructor(index, timestamp, data, previousHash = '', validator = 'Sistem') {
         this.index = index;
         this.timestamp = timestamp;
         this.data = data;
         this.previousHash = previousHash;
+        this.validator = validator; // Kim doğruladı?
+        this.nonce = 0;             // Madencilik sayısı
         this.hash = this.calculateHash();
-        this.nonce = 0; // WOW: Madencilik için sayaç (Deneme sayısı)
     }
 
     calculateHash() {
-        // Nonce değerini de şifreye dahil ediyoruz
-        const veriBirlestir = this.index + this.previousHash + this.timestamp + JSON.stringify(this.data) + this.nonce;
+        // Hash hesaplarken HEM validator ismini HEM de nonce değerini katıyoruz
+        const veriBirlestir = this.index + this.previousHash + this.timestamp + JSON.stringify(this.data) + this.validator + this.nonce;
         return crypto.createHash('sha256').update(veriBirlestir).digest('hex');
     }
 
-    // WOW: Madencilik Fonksiyonu
-    // difficulty: Zorluk derecesi (Kaç tane 0 ile başlamalı?)
+    // PoW için Madencilik Fonksiyonu
     mineBlock(difficulty) {
-        // Hash'in başındaki karakterler, istediğimiz kadar "0" olana kadar döngü kuruyoruz
-        // Örn: difficulty 2 ise hash "00..." ile başlamalı.
+        // Hash istenen sayıda '0' ile başlayana kadar nonce'u artır
         while (this.hash.substring(0, difficulty) !== Array(difficulty + 1).join("0")) {
-            this.nonce++; // Sayacı 1 artır
-            this.hash = this.calculateHash(); // Yeni hash hesapla
+            this.nonce++;
+            this.hash = this.calculateHash();
         }
-        // Döngü bittiğinde madencilik tamamlanmış demektir.
-        console.log("⛏️  Blok Kazıldı: " + this.hash);
+        console.log("⛏️  Blok Kazıldı (PoW): " + this.hash);
     }
 }
 
