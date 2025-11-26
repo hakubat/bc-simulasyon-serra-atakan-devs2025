@@ -135,8 +135,9 @@ async function main() {
             name: 'secim',
             message: chalk.yellow('İşlem Seçiniz:'),
             choices: [
-                '⛏️  Blok Kaz (Proof of Work)',       // CPU gücü ile
-                '🎲  Blok İmzala (Proof of Stake)',   // Varlık gücü ile
+                '⛏️  Blok Kaz (Proof of Work)',       // CPU gücü ile (simülatif)
+                '🎲  Blok İmzala (Proof of Stake)',   // Stake gücü ile
+                '📉  ITÜCOIN Sat (Market Sell)',      // ITUCOIN fiyatını düşürür
                 '👥  Doğrulayıcıları Gör (Table)',    // Hissedarlar
                 '⛓️  Zinciri Görüntüle (Table)',      // Blockchain explorer
                 '🗑️  Sistemi Sıfırla (Reset)',        // Fabrika ayarları
@@ -148,6 +149,7 @@ async function main() {
     // Seçime göre yönlendirme (Router)
     if (cevap.secim.includes('Proof of Work')) await powBlokEkle();
     else if (cevap.secim.includes('Proof of Stake')) await posBlokEkle();
+    else if (cevap.secim.includes('ITÜCOIN Sat')) await ituCoinSatis();
     else if (cevap.secim.includes('Doğrulayıcıları Gör')) await validatorGoster();
     else if (cevap.secim.includes('Zinciri Görüntüle')) await zinciriGoster();
     else if (cevap.secim.includes('Sistemi Sıfırla')) await sistemiSifirla();
@@ -303,6 +305,73 @@ async function zincireEkleVeKaydet(blok, toplamKazanc, hesap, islemVerisi) {
 
     // Dosyaya yaz (Persistence)
     fs.writeFileSync('data.json', JSON.stringify(myCoin.chain, null, 4));
+    await bekleVeDon();
+}
+// --- YENİ: SATIŞ FONKSİYONU ---
+async function ituCoinSatis() {
+    console.log(chalk.gray("\n--- Satış Emri (Sell Order) ---"));
+    
+    // Kullanıcıdan miktar al
+    const cevap = await inquirer.prompt([
+        { type: 'number', name: 'miktar', message: chalk.red('Kaç ITÜCOIN satmak istiyorsun?'), default: 100 }
+    ]);
+    const satilanMiktar = cevap.miktar;
+
+    // --- AMM MATEMATİĞİ (Tersine Çalışır) ---
+    // 1. Havuza Coin giriyor (x artar)
+    LIQUIDITY_POOL.ituCoin += satilanMiktar;
+
+    // 2. Havuzdan ne kadar Dolar çıkmalı? (y = k / x)
+    const eskiUsdt = LIQUIDITY_POOL.usdt;
+    const yeniUsdt = LIQUIDITY_POOL.k / LIQUIDITY_POOL.ituCoin;
+    const alinanUsdt = eskiUsdt - yeniUsdt; // Kullanıcıya ödenecek para
+
+    // 3. Havuzu güncelle (y azalır)
+    LIQUIDITY_POOL.usdt = yeniUsdt;
+
+    // 4. Yeni Fiyatı Hesapla
+    const eskiFiyat = MARKET['ITÜCOIN'];
+    const yeniFiyat = LIQUIDITY_POOL.usdt / LIQUIDITY_POOL.ituCoin;
+    MARKET['ITÜCOIN'] = yeniFiyat;
+
+    // Grafiği güncellemek için geçmişe ekle
+    if (typeof FIYAT_GECMISI !== 'undefined') {
+        FIYAT_GECMISI.push(yeniFiyat);
+        if (FIYAT_GECMISI.length > 30) FIYAT_GECMISI.shift();
+        if (fs.existsSync('market.json')) fs.writeFileSync('market.json', JSON.stringify(FIYAT_GECMISI));
+    }
+
+    // Animasyon
+    await beklemeEfekti(chalk.red('Satış emri havuza iletiliyor...'), 1500);
+
+    // Bloğa Yaz (DEX Satışı Olarak)
+    const islemVerisi = {
+        txId: Math.random().toString(36).substr(2, 9).toUpperCase(),
+        gonderen: "Atakan (Trader)",
+        alici: "Liquidity Pool (AMM)",
+        miktar: satilanMiktar,
+        birim: "ITÜCOIN (SOLD)"
+    };
+
+    const yeniBlok = new Block(myCoin.chain.length, new Date().toLocaleString(), islemVerisi, myCoin.getLatestBlock().hash, "DEX Contract");
+    myCoin.addBlock(yeniBlok);
+    fs.writeFileSync('data.json', JSON.stringify(myCoin.chain, null, 4));
+
+    // SONUÇ EKRANI (Kırmızı Tema)
+    let ozetMetni = `${chalk.bold('İŞLEM:')} SATIŞ (SELL)\n`;
+    ozetMetni += `${chalk.bold('VERİLEN:')} ${satilanMiktar} ITÜCOIN\n`;
+    ozetMetni += `${chalk.bold.green('ALINAN:')}  ${alinanUsdt.toFixed(2)} USDT\n`;
+    
+    console.log(boxen(ozetMetni, {
+        padding: 1,
+        borderStyle: 'double',
+        borderColor: 'red',
+        title: '📉 SATIŞ BAŞARILI',
+    }));
+    
+    // Fiyat Düşüş Uyarısı
+    console.log(gradient.morning(` 📉 PİYASA DÜŞTÜ: ${eskiFiyat.toFixed(4)}$ -> ${yeniFiyat.toFixed(4)}$ `));
+    
     await bekleVeDon();
 }
 

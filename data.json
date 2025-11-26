@@ -1,0 +1,90 @@
+[
+    {
+        "index": 0,
+        "timestamp": "01/01/2025",
+        "data": "Genesis Block",
+        "previousHash": "0",
+        "validator": "Sistem",
+        "nonce": 0,
+        "hash": "2170f16fd7d490ba9949c3a773733eef7378428581b84dbb89062b11824c211a"
+    },
+    {
+        "index": 1,
+        "timestamp": "11/26/2025, 10:41:24 PM",
+        "data": {
+            "txId": "992DFWDFC",
+            "zaman": "10:41:22 PM",
+            "gonderen": "x",
+            "alici": "y",
+            "miktar": 100,
+            "birim": "WBTC (Wrapped)"
+        },
+        "previousHash": "2170f16fd7d490ba9949c3a773733eef7378428581b84dbb89062b11824c211a",
+        "validator": "Atakan Kubat",
+        "nonce": 0,
+        "hash": "adca46014e8ae7cb12a84aeec6224df1df6f2926c187cf08fecf91091ee50751"
+    },
+    {
+        "index": 2,
+        "timestamp": "11/27/2025, 12:08:57 AM",
+        "data": {
+            "txId": "F0NN6SSG9",
+            "zaman": "12:08:55 AM",
+            "gonderen": "x",
+            "alici": "y",
+            "miktar": 100000000,
+            "birim": "ITÜCOIN"
+        },
+        "previousHash": "adca46014e8ae7cb12a84aeec6224df1df6f2926c187cf08fecf91091ee50751",
+        "validator": "Atakan Kubat",
+        "nonce": 0,
+        "hash": "4b69d2d645456366722fbee3e3560851be0adb710648b24b2ace3c267d9f2fcc"
+    },
+    {
+        "index": 3,
+        "timestamp": "11/27/2025, 12:09:14 AM",
+        "data": {
+            "txId": "9E86IZFQ4",
+            "zaman": "12:09:13 AM",
+            "gonderen": "x",
+            "alici": "y",
+            "miktar": 100000000,
+            "birim": "USDT"
+        },
+        "previousHash": "4b69d2d645456366722fbee3e3560851be0adb710648b24b2ace3c267d9f2fcc",
+        "validator": "Atakan Kubat",
+        "nonce": 0,
+        "hash": "27a925fc1b8ff1df3c6716d18d19e34a3a2177e438f0f739d1d74adecfd84780"
+    },
+    {
+        "index": 4,
+        "timestamp": "11/27/2025, 12:23:10 AM",
+        "data": {
+            "txId": "OIQLC23MA",
+            "zaman": "12:23:07 AM",
+            "gonderen": "10000000",
+            "alici": "a",
+            "miktar": 12345678,
+            "birim": "USDT"
+        },
+        "previousHash": "27a925fc1b8ff1df3c6716d18d19e34a3a2177e438f0f739d1d74adecfd84780",
+        "validator": "Miner Node (PoW)",
+        "nonce": 1251,
+        "hash": "002a1d4e3ff4a2059e0b7e3aa8a6a042c5329359e87e562c8b5fa6fc609b7b9b"
+    },
+    {
+        "index": 5,
+        "timestamp": "11/27/2025, 12:23:30 AM",
+        "data": {
+            "txId": "OFKWOO5FV",
+            "gonderen": "Atakan (Trader)",
+            "alici": "Liquidity Pool (AMM)",
+            "miktar": 10000000,
+            "birim": "ITÜCOIN (SOLD)"
+        },
+        "previousHash": "002a1d4e3ff4a2059e0b7e3aa8a6a042c5329359e87e562c8b5fa6fc609b7b9b",
+        "validator": "DEX Contract",
+        "nonce": 0,
+        "hash": "5ae4c28169cd56a3b2c65719033b78a1c2fcf349475657c44ce541770bfeed43"
+    }
+]
