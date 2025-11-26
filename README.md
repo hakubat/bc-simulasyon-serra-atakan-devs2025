@@ -1,4 +1,4 @@
-# ⛓️ İTÜ Blockchain Simülasyonu
+# ⛓️ İTÜCHAIN Blockchain Simülasyonu
 
 Bu proje, **İTÜ Blockchain Kulübü** tarafından verilen ödev kapsamında geliştirilmiş, terminal tabanlı basit bir blokzincir simülasyonudur.
 
