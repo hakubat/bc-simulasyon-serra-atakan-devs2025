@@ -4,33 +4,25 @@ const Blockchain = require('./blockchain');
 const Block = require('./block');
 const fs = require('fs');
 const chalk = require('chalk');
+const figlet = require('figlet');       // Logo
+const ora = require('ora');             // Animasyon
+const Table = require('cli-table3');    // Tablo
 
-// DİKKAT: Reset atabilmek için 'const' yerine 'let' yaptık
+// --- SİSTEM AYARLARI ---
 let myCoin = new Blockchain();
 const BLOK_ODULU = 50;         
 const KOMISYON_ORANI = 0.05;   
 
-// --- 1. LİKİDİTE HAVUZU (BAŞLANGIÇ DEĞERLERİ) ---
-// Reset atıldığında bu değerlere geri dönülecek
-const BASLANGIC_HAVUZ = {
-    ituCoin: 1000000,
-    usdt: 10000000
-};
-
-let LIQUIDITY_POOL = {
-    ituCoin: BASLANGIC_HAVUZ.ituCoin,
-    usdt: BASLANGIC_HAVUZ.usdt,
-    k: 0
-};
-
-// k değerini hesapla
+// --- 1. LİKİDİTE HAVUZU (AMM) ---
+const BASLANGIC_HAVUZ = { ituCoin: 1000000, usdt: 10000000 };
+let LIQUIDITY_POOL = { ituCoin: BASLANGIC_HAVUZ.ituCoin, usdt: BASLANGIC_HAVUZ.usdt, k: 0 };
 LIQUIDITY_POOL.k = LIQUIDITY_POOL.ituCoin * LIQUIDITY_POOL.usdt;
 
-let MARKET = {
-    'ITÜCOIN': 10.0,
-    'WBTC (Wrapped)': 95000.0,
-    'WETH (Wrapped)': 3200.0,
-    'USDT': 1.0        
+let MARKET = { 
+    'ITÜCOIN': 10.0, 
+    'WBTC (Wrapped)': 95000.0, 
+    'WETH (Wrapped)': 3200.0, 
+    'USDT': 1.0 
 };
 
 // --- DATA YÜKLEME ---
@@ -38,42 +30,40 @@ if (fs.existsSync('data.json')) {
     try {
         const dosyaVerisi = fs.readFileSync('data.json', 'utf-8');
         if (dosyaVerisi.length > 0) myCoin.chain = JSON.parse(dosyaVerisi);
-        
-        // EĞER KAYITLI VERİ VARSA HAVUZU ONA GÖRE GÜNCELLEMEK GEREKİRDİ
-        // Ama simülasyon basitliği için havuz her açılışta sıfırlanıyor.
-        // İleri seviye: Havuz durumu da json'a kaydedilebilir.
     } catch (e) { }
 }
 
-// BAŞLANGIÇ VALIDATOR LİSTESİ (Reset için sabit tutuyoruz)
+// --- VALIDATORS ---
 const BASLANGIC_VALIDATORS = [
     { name: 'Atakan Kubat', stake: 1225 },
     { name: 'Serra Güneri', stake: 1140 },
     { name: 'Batıkan Kutluer', stake: 1230 },
     { name: 'Muaz bin Cebel', stake: 1500 }
 ];
-
-// Oynanabilir liste (Klonluyoruz)
 let VALIDATORS = JSON.parse(JSON.stringify(BASLANGIC_VALIDATORS));
+
+// --- YARDIMCI: BEKLEME ANİMASYONU ---
+async function beklemeEfekti(mesaj, sure = 1500) {
+    const spinner = ora(mesaj).start();
+    await new Promise(r => setTimeout(r, sure));
+    spinner.succeed(chalk.green("İşlem Tamamlandı"));
+}
 
 async function main() {
     console.clear();
-    console.log(chalk.cyan.bold("=========================================="));
-    console.log(chalk.cyan.bold("🌐  İTÜ HYBRID CHAIN (AMM DEX Model)     🌐"));
-    console.log(chalk.cyan.bold("=========================================="));
     
-    // Fiyatı Havuzdan Hesapla
+    // GÖRSEL 1: LOGO
+    console.log(chalk.cyan(
+        figlet.textSync('ITU CHAIN', { horizontalLayout: 'full' })
+    ));
+    
+    // Fiyatı Havuzdan Hesapla (Oracle)
     MARKET['ITÜCOIN'] = LIQUIDITY_POOL.usdt / LIQUIDITY_POOL.ituCoin;
 
-    console.log(chalk.yellow.bold("📊 CANLI PİYASA (x*y=k Modeli)"));
-    console.log(`ITÜCOIN: ${chalk.green(MARKET['ITÜCOIN'].toFixed(4))}$ | Havuz Likiditesi: ${chalk.dim((LIQUIDITY_POOL.usdt / 1000000).toFixed(1))}M $`);
-    console.log(chalk.gray("------------------------------------------"));
+    console.log(chalk.yellow.bold("📊 CANLI PİYASA (AMM DEX Model)"));
+    console.log(`ITÜCOIN: ${chalk.green(MARKET['ITÜCOIN'].toFixed(4))}$ | Likidite: ${chalk.dim((LIQUIDITY_POOL.usdt / 1000000).toFixed(1))}M $`);
+    console.log(chalk.gray("--------------------------------------------------"));
     
-    console.log(chalk.blue(`Blok Sayısı: ${myCoin.chain.length}`));
-    console.log(chalk.green(`Sabit Ödül : ${BLOK_ODULU} ITÜCOIN`));
-    console.log(chalk.magenta(`Gas Fee    : %${KOMISYON_ORANI * 100}`));
-    console.log("\n");
-
     const cevap = await inquirer.prompt([
         {
             type: 'list',
@@ -82,9 +72,9 @@ async function main() {
             choices: [
                 '⛏️  Blok Kaz (Proof of Work)',
                 '🎲  Blok İmzala (Proof of Stake)',
-                '👥  Doğrulayıcıları Gör (Validators)',
-                '⛓️  Zinciri Görüntüle',
-                '🗑️  Sistemi Sıfırla (Reset)', // YENİ SEÇENEK
+                '👥  Doğrulayıcıları Gör (Table View)',
+                '⛓️  Zinciri Görüntüle (Table View)',
+                '🗑️  Sistemi Sıfırla (Reset)',
                 '❌  Çıkış'
             ]
         }
@@ -94,67 +84,43 @@ async function main() {
     else if (cevap.secim.includes('Proof of Stake')) await posBlokEkle();
     else if (cevap.secim.includes('Doğrulayıcıları Gör')) await validatorGoster();
     else if (cevap.secim.includes('Zinciri Görüntüle')) await zinciriGoster();
-    else if (cevap.secim.includes('Sistemi Sıfırla')) await sistemiSifirla(); // YENİ FONKSİYON
+    else if (cevap.secim.includes('Sistemi Sıfırla')) await sistemiSifirla();
     else process.exit();
 }
 
-// --- YENİ: SİSTEMİ SIFIRLAMA FONKSİYONU ---
 async function sistemiSifirla() {
     console.log("\n");
-    const onay = await inquirer.prompt([
-        {
-            type: 'confirm',
-            name: 'emin',
-            message: chalk.bgRed.white.bold(' DİKKAT: Tüm bloklar, işlemler ve piyasa verileri silinecek. Emin misiniz? '),
-            default: false
-        }
-    ]);
+    const onay = await inquirer.prompt([{
+        type: 'confirm', name: 'emin', message: chalk.bgRed.white.bold(' TÜM VERİLER SİLİNECEK! Emin misiniz? '), default: false
+    }]);
 
     if (onay.emin) {
-        console.log(chalk.gray("Sistem temizleniyor..."));
+        // GÖRSEL 2: RESET ANİMASYONU
+        const spinner = ora('Sistem temizleniyor...').start();
+        await new Promise(r => setTimeout(r, 2000));
         
-        // 1. Dosyayı Sil
-        if (fs.existsSync('data.json')) {
-            fs.unlinkSync('data.json');
-            console.log(chalk.green("✔ data.json silindi."));
-        }
-
-        // 2. Blockchain'i Sıfırla (Yeni instance yarat)
+        if (fs.existsSync('data.json')) fs.unlinkSync('data.json');
+        
         myCoin = new Blockchain();
-        console.log(chalk.green("✔ Blok zinciri sıfırlandı (Genesis Block)."));
-
-        // 3. Havuzu Sıfırla
-        LIQUIDITY_POOL.ituCoin = BASLANGIC_HAVUZ.ituCoin;
-        LIQUIDITY_POOL.usdt = BASLANGIC_HAVUZ.usdt;
-        LIQUIDITY_POOL.k = LIQUIDITY_POOL.ituCoin * LIQUIDITY_POOL.usdt;
-        console.log(chalk.green("✔ Likidite havuzu ve fiyatlar 10$ başlangıcına döndü."));
-
-        // 4. Validatorleri Sıfırla (Kazançları sil)
+        LIQUIDITY_POOL = { ...BASLANGIC_HAVUZ, k: BASLANGIC_HAVUZ.ituCoin * BASLANGIC_HAVUZ.usdt };
         VALIDATORS = JSON.parse(JSON.stringify(BASLANGIC_VALIDATORS));
-        console.log(chalk.green("✔ Validator bakiyeleri sıfırlandı."));
-
-        console.log(chalk.bgGreen.black.bold("\n ✅ SİSTEM BAŞARIYLA FABRİKA AYARLARINA DÖNDÜ! "));
+        
+        spinner.succeed('Sistem Fabrika Ayarlarına Döndü.');
     } else {
         console.log(chalk.yellow("İşlem iptal edildi."));
     }
-
     await bekleVeDon();
 }
 
 async function transferBilgileriniAl() {
     console.log(chalk.gray("\n--- Transfer Detayları ---"));
     const cevaplar = await inquirer.prompt([
-        { type: 'input', name: 'gonderen', message: chalk.magenta('Gönderen Cüzdan:'), default: 'Atakan Kubat' },
-        { type: 'input', name: 'alici', message: chalk.magenta('Alıcı Cüzdan:'), validate: v => v.length > 0 ? true : 'İsim giriniz.' },
-        { type: 'number', name: 'miktar', message: chalk.magenta('Transfer Miktarı:'), default: 1000 },
-        { type: 'list', name: 'birim', message: chalk.magenta('Varlık Tipi (Asset):'), choices: ['USDT', 'ITÜCOIN', 'WBTC (Wrapped)', 'WETH (Wrapped)'] }
+        { type: 'input', name: 'gonderen', message: 'Gönderen Cüzdan:', default: 'Atakan Kubat' },
+        { type: 'input', name: 'alici', message: 'Alıcı Cüzdan:', validate: v => v.length > 0 ? true : 'İsim giriniz.' },
+        { type: 'number', name: 'miktar', message: 'Transfer Miktarı:', default: 1000 },
+        { type: 'list', name: 'birim', message: 'Varlık Tipi:', choices: ['USDT', 'ITÜCOIN', 'WBTC (Wrapped)', 'WETH (Wrapped)'] }
     ]);
-
-    return {
-        txId: Math.random().toString(36).substr(2, 9).toUpperCase(),
-        zaman: new Date().toLocaleTimeString(),
-        ...cevaplar
-    };
+    return { txId: Math.random().toString(36).substr(2, 9).toUpperCase(), zaman: new Date().toLocaleTimeString(), ...cevaplar };
 }
 
 function gasFeeHesapla(islemVerisi) {
@@ -172,10 +138,8 @@ function ammFiyatGuncelle(islemVerisi, hesap) {
     
     const eskiFiyat = MARKET['ITÜCOIN'];
     LIQUIDITY_POOL.ituCoin = yeniItuCoinMiktari;
-    
     const yeniFiyat = LIQUIDITY_POOL.usdt / LIQUIDITY_POOL.ituCoin;
     MARKET['ITÜCOIN'] = yeniFiyat;
-
     return { eskiFiyat, yeniFiyat };
 }
 
@@ -183,9 +147,8 @@ async function powBlokEkle() {
     const islemVerisi = await transferBilgileriniAl();
     const hesap = gasFeeHesapla(islemVerisi);
 
-    console.log(chalk.bgRed.white.bold("\n ⛏️  MADENCİLİK BAŞLIYOR (CPU GÜCÜ) "));
-    console.log(chalk.gray(`Uniswap AMM Havuzu kontrol ediliyor...`));
-    await new Promise(r => setTimeout(r, 1000));
+    // GÖRSEL 3: Mining Animasyonu
+    await beklemeEfekti(`${chalk.red('PoW Madencilik')} yapılıyor (Hash Hesaplanıyor)...`, 2000);
 
     const yeniBlok = new Block(
         myCoin.chain.length,
@@ -194,26 +157,23 @@ async function powBlokEkle() {
         myCoin.getLatestBlock().hash,
         "Miner Node (PoW)" 
     );
-
     yeniBlok.mineBlock(2);
     
-    const toplamKazanc = BLOK_ODULU + hesap.komisyonInItuCoin;
-    await zincireEkleVeKaydet(yeniBlok, toplamKazanc, hesap, islemVerisi); 
+    await zincireEkleVeKaydet(yeniBlok, BLOK_ODULU + hesap.komisyonInItuCoin, hesap, islemVerisi); 
 }
 
 async function posBlokEkle() {
     const islemVerisi = await transferBilgileriniAl();
     const hesap = gasFeeHesapla(islemVerisi);
 
-    console.log(chalk.bgGreen.black.bold("\n 🎲  DOĞRULAYICI SEÇİLİYOR (STAKING) "));
-    await new Promise(r => setTimeout(r, 1000));
+    // GÖRSEL 3: Staking Animasyonu
+    await beklemeEfekti(`${chalk.green('PoS Konsensüs')} çalışıyor (Validator Seçimi)...`, 1500);
 
     const kazanan = validatorSec();
     const toplamOdul = BLOK_ODULU + hesap.komisyonInItuCoin;
     kazanan.stake += toplamOdul;
 
-    console.log(chalk.yellow(`🎉 Seçilen Doğrulayıcı: ${kazanan.name}`));
-    console.log(chalk.dim(`(Toplam Kazanç: ${toplamOdul.toFixed(2)} ITÜCOIN)`));
+    console.log(chalk.yellow(`🎉 Seçilen: ${kazanan.name}`));
 
     const yeniBlok = new Block(
         myCoin.chain.length,
@@ -222,39 +182,27 @@ async function posBlokEkle() {
         myCoin.getLatestBlock().hash,
         kazanan.name
     );
-
     await zincireEkleVeKaydet(yeniBlok, toplamOdul, hesap, islemVerisi);
 }
 
 async function zincireEkleVeKaydet(blok, toplamKazanc, hesap, islemVerisi) {
     myCoin.addBlock(blok);
-    
     const fiyatDegisimi = ammFiyatGuncelle(islemVerisi, hesap);
 
-    console.log(chalk.green.bold("\n✅ BLOK ZİNCİRE EKLENDİ!"));
-    console.log(chalk.white("---------------------------------------------------"));
-    console.log(chalk.bold("İŞLEM: ") + `${blok.data.gonderen} -> ${blok.data.alici} (${blok.data.miktar} ${blok.data.birim})`);
-    console.log(chalk.dim(`(Gas Fee / Komisyon: ${hesap.komisyonDolar.toFixed(2)} USD)`)); 
     console.log(chalk.white("---------------------------------------------------"));
     
-    if (blok.nonce > 0) {
-        console.log(chalk.yellow("Konsensüs: ") + chalk.red("PoW (Work)"));
-        console.log(chalk.yellow("Node     : ") + "Miner (Anonim)");
-    } else {
-        console.log(chalk.yellow("Konsensüs: ") + chalk.green("PoS (Stake)"));
-        console.log(chalk.yellow("Validator: ") + chalk.cyan(blok.validator));
-    }
+    // GÖRSEL 4: İŞLEM TABLOSU
+    const txTable = new Table({ head: ['Gönderen', 'Alıcı', 'Miktar', 'Birim'] });
+    txTable.push([blok.data.gonderen, blok.data.alici, blok.data.miktar, blok.data.birim]);
+    console.log(txTable.toString());
 
-    console.log(chalk.yellow("KAZANÇ   : ") + chalk.green.bold(`+${toplamKazanc.toFixed(2)} ITÜCOIN 💰`));
-    console.log(chalk.gray(`(Blok Ödülü: ${BLOK_ODULU} + Gas Fee: ${hesap.komisyonInItuCoin.toFixed(2)})`));
-    console.log(chalk.yellow("Hash     : ") + chalk.gray(blok.hash));
-    
-    console.log(chalk.white("---------------------------------------------------"));
-    const renk = fiyatDegisimi.yeniFiyat > fiyatDegisimi.eskiFiyat ? chalk.green : chalk.red;
-    console.log(chalk.bgBlue.white.bold(` 📊 AMM (x*y=k) FİYAT GÜNCELLEMESİ `));
-    console.log(`Eski Fiyat: ${fiyatDegisimi.eskiFiyat.toFixed(5)}$`);
-    console.log(`Yeni Fiyat: ${renk(fiyatDegisimi.yeniFiyat.toFixed(5) + "$")} (Talep Etkisi)`);
-    console.log(chalk.white("---------------------------------------------------"));
+    console.log(chalk.dim(`(Gas Fee: ${hesap.komisyonDolar.toFixed(2)}$)`)); 
+    console.log(chalk.yellow(`KAZANÇ: +${toplamKazanc.toFixed(2)} ITÜCOIN (Validator: ${blok.validator})`));
+
+    // AMM FİYAT ETKİSİ
+    if(fiyatDegisimi.yeniFiyat > fiyatDegisimi.eskiFiyat) {
+        console.log(chalk.bgGreen.black(` 📈 ITÜCOIN ARTTI: ${fiyatDegisimi.eskiFiyat.toFixed(4)}$ -> ${fiyatDegisimi.yeniFiyat.toFixed(4)}$ `));
+    }
 
     fs.writeFileSync('data.json', JSON.stringify(myCoin.chain, null, 4));
     await bekleVeDon();
@@ -270,24 +218,60 @@ function validatorSec() {
     return VALIDATORS[0];
 }
 
+// GÖRSEL 5: VALIDATOR TABLOSU
 async function validatorGoster() {
-    console.log(chalk.yellow.bold("\n--- 👥 AĞ DOĞRULAYICILARI (VALIDATORS) ---"));
-    VALIDATORS.forEach(v => {
-        const bar = "█".repeat(Math.ceil(v.stake / 100)); 
-        console.log(`${chalk.cyan(v.name.padEnd(15))} : ${chalk.green(Number(v.stake).toFixed(1))} ITÜCOIN ${chalk.gray(bar)}`);
+    console.log(chalk.yellow.bold("\n--- 👥 DOĞRULAYICI LİSTESİ ---"));
+    
+    const table = new Table({
+        head: [chalk.cyan('Validator Adı'), chalk.cyan('Stake (ITÜCOIN)'), chalk.cyan('Güç %')],
+        colWidths: [20, 20, 10]
     });
+
+    const toplamStake = VALIDATORS.reduce((a, b) => a + b.stake, 0);
+
+    VALIDATORS.forEach(v => {
+        const yuzde = ((v.stake / toplamStake) * 100).toFixed(1);
+        table.push([v.name, v.stake.toFixed(2), `%${yuzde}`]);
+    });
+
+    console.log(table.toString());
     await bekleVeDon();
 }
 
+// GÖRSEL 6: ZİNCİR TABLOSU
 async function zinciriGoster() {
-    console.log(chalk.yellow.bold("\n⛓️  HIBRT BLOK ZİNCİRİ  ⛓️"));
-    console.log(JSON.stringify(myCoin.chain, null, 4));
+    console.log(chalk.yellow.bold("\n⛓️  BLOK ZİNCİRİ GEÇMİŞİ  ⛓️"));
+    
+    const table = new Table({
+        head: ['No', 'Zaman', 'Kimden -> Kime', 'Miktar', 'Doğrulayıcı'],
+        colWidths: [5, 22, 30, 15, 20]
+    });
+
+    myCoin.chain.forEach(blok => {
+        let transfer = "Genesis Block";
+        let miktar = "-";
+        
+        if (typeof blok.data === 'object') {
+            transfer = `${blok.data.gonderen.substr(0,10)}.. -> ${blok.data.alici.substr(0,10)}..`;
+            miktar = `${blok.data.miktar} ${blok.data.birim}`;
+        }
+
+        table.push([
+            blok.index,
+            blok.timestamp.substr(0, 20),
+            transfer,
+            miktar,
+            blok.validator ? blok.validator.substr(0, 18) : 'Sistem'
+        ]);
+    });
+
+    console.log(table.toString());
     await bekleVeDon();
 }
 
 async function bekleVeDon() {
     console.log("\n");
-    await inquirer.prompt([{ type: 'input', name: 'devam', message: chalk.gray('Devam etmek için ENTER\'a basın...') }]);
+    await inquirer.prompt([{ type: 'input', name: 'devam', message: chalk.gray('Menü için ENTER...') }]);
     main();
 }
 
