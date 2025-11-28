@@ -42,8 +42,11 @@ let MARKET = {
     'USDT': 1.0 
 };
 
+<<<<<<< HEAD
 let FIYAT_GECMISI = [];
 
+=======
+>>>>>>> 4e1edc0a76928fcbd4435b98be2b226daaff0438
 // --- DATA YÜKLEME (PERSISTENCE) ---
 // Program açıldığında eski kayıtlar var mı diye bakar.
 if (fs.existsSync('data.json')) {
@@ -116,6 +119,7 @@ async function main() {
     // Fiyat = Havuzdaki Dolar / Havuzdaki Coin
     MARKET['ITÜCOIN'] = LIQUIDITY_POOL.usdt / LIQUIDITY_POOL.ituCoin;
 
+<<<<<<< HEAD
 // 3. PİYASA BİLGİSİNİ KUTULU GÖSTER
     
     // a. TVL Hesabı: (Havuzdaki Dolar) + (Havuzdaki Coin * Güncel Fiyat)
@@ -132,14 +136,26 @@ async function main() {
 
     console.log(boxen(marketInfo, {
         padding: 1,
+=======
+    // 3. PİYASA BİLGİSİNİ KUTULU GÖSTER
+    const marketInfo = `ITÜCOIN: ${MARKET['ITÜCOIN'].toFixed(4)}$\nHavuz Likiditesi: ${(LIQUIDITY_POOL.usdt / 1000000).toFixed(1)}M $`;
+    console.log(boxen(marketInfo, {
+        padding: 0,
+>>>>>>> 4e1edc0a76928fcbd4435b98be2b226daaff0438
         margin: 0,
         borderStyle: 'round',
         borderColor: 'cyan',
         title: 'CANLI PİYASA (AMM)',
         titleAlignment: 'center'
     }));
+<<<<<<< HEAD
 
 // 4. MENÜ SEÇENEKLERİ
+=======
+    console.log("\n");
+
+    // 4. MENÜ SEÇENEKLERİ
+>>>>>>> 4e1edc0a76928fcbd4435b98be2b226daaff0438
     const cevap = await inquirer.prompt([
         {
             type: 'list',
