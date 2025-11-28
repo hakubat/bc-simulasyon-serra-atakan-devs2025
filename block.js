@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 
 class Block {
-    // Hem PoS (validator) hem PoW (nonce) desteği var
+    // Hem PoS hem PoW desteği var
     constructor(index, timestamp, data, previousHash = '', validator = 'Sistem') {
         this.index = index;
         this.timestamp = timestamp;

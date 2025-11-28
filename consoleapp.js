@@ -1,20 +1,20 @@
 #!/usr/bin/env node
-// 👆 Bu satır, dosyanın terminalde 'node' komutu yazmadan (sadece 'ituchain' yazarak) çalışmasını sağlar.
+// Bu satır, dosyanın terminalde 'node consoleapp.js' komutu yazmadan sadece 'ituchain' yazarak çalışmasını sağlıyor
 
 // --- KÜTÜPHANELER (ARAÇ ÇANTAMIZ) ---
 const inquirer = require('inquirer');       // Kullanıcıya soru sormak ve menü yapmak için
 const Blockchain = require('./blockchain'); // Kendi yazdığımız Blockchain mantığı
 const Block = require('./block');           // Blok yapımız
-const fs = require('fs');                   // Dosya okuma/yazma (Kalıcılık için)
-const chalk = require('chalk');             // Terminaldeki renkli yazılar için
+const fs = require('fs');                 
+const chalk = require('chalk');            
 
 // --- GÖRSEL EFEKT KÜTÜPHANELERİ (UX) ---
-const figlet = require('figlet');           // Dev ASCII logoları oluşturmak için
-const ora = require('ora');                 // Bekleme sırasındaki dönen animasyonlar (Spinner)
-const Table = require('cli-table3');        // Verileri Excel gibi tabloda göstermek için
-const gradient = require('gradient-string');// Gökkuşağı renk geçişleri için
-const boxen = require('boxen');             // Mesajları şık kutular içine almak için
-const cliProgress = require('cli-progress');// Madencilik ilerleme çubuğu için
+const figlet = require('figlet');         
+const ora = require('ora');                
+const Table = require('cli-table3');        
+const gradient = require('gradient-string');
+const boxen = require('boxen');            
+const cliProgress = require('cli-progress');
 
 // --- SİSTEM AYARLARI ---
 let myCoin = new Blockchain(); // Zincirimizi başlatıyoruz
@@ -22,7 +22,7 @@ const BLOK_ODULU = 50;         // Her blokta sistemin verdiği sabit maaş (ITÜ
 const KOMISYON_ORANI = 0.05;   // %5 İşlem ücreti (Gas Fee)
 
 // --- AMM (OTOMATİK PİYASA YAPICI) AYARLARI ---
-// Uniswap mantığı: x * y = k formülü burada çalışır.
+// Uniswap mantığı: x * y = k formülü burada çalışıyor. (Blockchain 102 dersinde anlatıldı)
 const BASLANGIC_HAVUZ = { ituCoin: 1000000, usdt: 10000000 }; // Havuzdaki başlangıç parası
 
 // Havuzun o anki canlı durumu
@@ -31,16 +31,18 @@ let LIQUIDITY_POOL = {
     usdt: BASLANGIC_HAVUZ.usdt, 
     k: 0 
 };
-// k değeri (Sabit Çarpım) hesaplanıyor. Bu değer asla değişmez!
+// k değeri (Sabit Çarpım) hesaplanıyor. Bu değer sabittir
 LIQUIDITY_POOL.k = LIQUIDITY_POOL.ituCoin * LIQUIDITY_POOL.usdt;
 
-// Anlık Piyasa Fiyatları (Oracle Simülasyonu)
+// Anlık Piyasa Fiyatları
 let MARKET = { 
     'ITÜCOIN': 10.0, 
     'WBTC (Wrapped)': 95000.0, 
     'WETH (Wrapped)': 3200.0, 
     'USDT': 1.0 
 };
+
+let FIYAT_GECMISI = [];
 
 // --- DATA YÜKLEME (PERSISTENCE) ---
 // Program açıldığında eski kayıtlar var mı diye bakar.
@@ -51,8 +53,7 @@ if (fs.existsSync('data.json')) {
     } catch (e) { }
 }
 
-// --- SANAL DOĞRULAYICILAR (VALIDATORS) ---
-// PoS sisteminde piyangoya katılacak kişiler
+// --- DOĞRULAYICILAR (VALIDATORS) ---
 const BASLANGIC_VALIDATORS = [
     { name: 'Atakan Kubat', stake: 1225 },
     { name: 'Serra Güneri', stake: 1140 },
@@ -63,15 +64,14 @@ const BASLANGIC_VALIDATORS = [
 let VALIDATORS = JSON.parse(JSON.stringify(BASLANGIC_VALIDATORS));
 
 // --- GÖRSEL EFEKT: MADENCİLİK BAR ---
-// PoW işlemi sırasında ekranda dolan barı gösterir
 async function madencilikEfekti() {
     console.log(chalk.gray("\nSHA-256 Algoritması Çalıştırılıyor (Nonce Aranıyor)..."));
     
     // Bar ayarları
     const bar = new cliProgress.SingleBar({
         format: chalk.cyan('{bar}') + ' | {percentage}% | {value}/{total} Hash Denemesi',
-        barCompleteChar: '\u2588',   // Dolu kısım
-        barIncompleteChar: '\u2591', // Boş kısım
+        barCompleteChar: '\u2588', 
+        barIncompleteChar: '\u2591',
         hideCursor: true
     });
 
@@ -92,7 +92,7 @@ async function beklemeEfekti(mesaj, sure = 1500) {
     const spinner = ora({
         text: mesaj,
         color: 'yellow',
-        spinner: 'dots12' // Havalı bir dönme efekti
+        spinner: 'dots12'
     }).start();
     
     // İşlemi simüle etmek için bekletiyoruz
@@ -116,19 +116,30 @@ async function main() {
     // Fiyat = Havuzdaki Dolar / Havuzdaki Coin
     MARKET['ITÜCOIN'] = LIQUIDITY_POOL.usdt / LIQUIDITY_POOL.ituCoin;
 
-    // 3. PİYASA BİLGİSİNİ KUTULU GÖSTER
-    const marketInfo = `ITÜCOIN: ${MARKET['ITÜCOIN'].toFixed(4)}$\nHavuz Likiditesi: ${(LIQUIDITY_POOL.usdt / 1000000).toFixed(1)}M $`;
+// 3. PİYASA BİLGİSİNİ KUTULU GÖSTER
+    
+    // a. TVL Hesabı: (Havuzdaki Dolar) + (Havuzdaki Coin * Güncel Fiyat)
+    // Aslında havuz dengedeyse ikisi eşittir, yani 2 * USDT de diyebiliriz.
+    let totalTVL = LIQUIDITY_POOL.usdt + (LIQUIDITY_POOL.ituCoin * MARKET['ITÜCOIN']);
+
+    // b. Formatlama (Bloomberg Standardı: $ işareti başta)
+    let showPrice = "$" + MARKET['ITÜCOIN'].toFixed(4);
+    let showTVL   = "$" + (totalTVL / 1000000).toFixed(1) + "M";
+
+    // c. Hizalama (padEnd ile kutu bozulmaz)
+    // Boxen zaten kutu yapıyor ama içindeki metin hizası için bunu yapıyoruz
+    const marketInfo = `ITÜCOIN: ${showPrice.padEnd(10, ' ')}\nTVL:     ${showTVL.padEnd(10, ' ')}`;
+
     console.log(boxen(marketInfo, {
-        padding: 0,
+        padding: 1,
         margin: 0,
         borderStyle: 'round',
         borderColor: 'cyan',
         title: 'CANLI PİYASA (AMM)',
         titleAlignment: 'center'
     }));
-    console.log("\n");
 
-    // 4. MENÜ SEÇENEKLERİ
+// 4. MENÜ SEÇENEKLERİ
     const cevap = await inquirer.prompt([
         {
             type: 'list',
@@ -146,7 +157,7 @@ async function main() {
         }
     ]);
 
-    // Seçime göre yönlendirme (Router)
+    // Seçime göre yönlendirme
     if (cevap.secim.includes('Proof of Work')) await powBlokEkle();
     else if (cevap.secim.includes('Proof of Stake')) await posBlokEkle();
     else if (cevap.secim.includes('ITÜCOIN Sat')) await ituCoinSatis();
@@ -222,8 +233,6 @@ function ammFiyatGuncelle(islemVerisi, hesap) {
     
     // Fiyatları kıyaslamak için eski fiyatı tut
     const eskiFiyat = MARKET['ITÜCOIN'];
-    
-    // Havuzu güncelle
     LIQUIDITY_POOL.ituCoin = yeniItuCoinMiktari;
     
     // Yeni Fiyat = Havuzdaki Dolar / Havuzdaki Coin
@@ -243,11 +252,7 @@ async function powBlokEkle() {
 
     // Bloğu oluştur
     const yeniBlok = new Block(myCoin.chain.length, new Date().toLocaleString(), islemVerisi, myCoin.getLatestBlock().hash, "Miner Node (PoW)");
-    
-    // Zorluk (Difficulty) seviyesine göre hash ara
     yeniBlok.mineBlock(2);
-    
-    // Kaydet
     await zincireEkleVeKaydet(yeniBlok, BLOK_ODULU + hesap.komisyonInItuCoin, hesap, islemVerisi); 
 }
 
@@ -259,7 +264,6 @@ async function posBlokEkle() {
     // Doğrulayıcı seçimi animasyonu
     await beklemeEfekti(`Validator seçiliyor...`, 1500);
 
-    // Piyango ile kazananı belirle
     const kazanan = validatorSec();
     
     // Kazananın hesabına ödülü yatır (Maaş + Gas Fee)
@@ -267,15 +271,10 @@ async function posBlokEkle() {
     kazanan.stake += toplamOdul;
 
     console.log(chalk.yellow(`🎉 Seçilen: ${kazanan.name}`));
-
-    // Bloğu oluştur (Madencilik yok, anında oluşturulur)
     const yeniBlok = new Block(myCoin.chain.length, new Date().toLocaleString(), islemVerisi, myCoin.getLatestBlock().hash, kazanan.name);
-    
-    // Kaydet
     await zincireEkleVeKaydet(yeniBlok, toplamOdul, hesap, islemVerisi);
 }
 
-// --- ORTAK KAYIT VE GÖRSELLEŞTİRME ---
 async function zincireEkleVeKaydet(blok, toplamKazanc, hesap, islemVerisi) {
     myCoin.addBlock(blok);
     
@@ -341,10 +340,8 @@ async function ituCoinSatis() {
         if (fs.existsSync('market.json')) fs.writeFileSync('market.json', JSON.stringify(FIYAT_GECMISI));
     }
 
-    // Animasyon
     await beklemeEfekti(chalk.red('Satış emri havuza iletiliyor...'), 1500);
 
-    // Bloğa Yaz (DEX Satışı Olarak)
     const islemVerisi = {
         txId: Math.random().toString(36).substr(2, 9).toUpperCase(),
         gonderen: "Atakan (Trader)",
@@ -357,7 +354,7 @@ async function ituCoinSatis() {
     myCoin.addBlock(yeniBlok);
     fs.writeFileSync('data.json', JSON.stringify(myCoin.chain, null, 4));
 
-    // SONUÇ EKRANI (Kırmızı Tema)
+    // SONUÇ EKRANI (Kırmızı Tema: çünkü bear market lol)
     let ozetMetni = `${chalk.bold('İŞLEM:')} SATIŞ (SELL)\n`;
     ozetMetni += `${chalk.bold('VERİLEN:')} ${satilanMiktar} ITÜCOIN\n`;
     ozetMetni += `${chalk.bold.green('ALINAN:')}  ${alinanUsdt.toFixed(2)} USDT\n`;
@@ -377,7 +374,7 @@ async function ituCoinSatis() {
 
 // --- YARDIMCI: Validator Seçimi ---
 function validatorSec() {
-    // Stake miktarına göre ağırlıklı rastgele seçim (Piyango)
+    // Stake miktarına göre ağırlıklı rastgele seçim
     const toplamStake = VALIDATORS.reduce((acc, v) => acc + v.stake, 0);
     let rastgele = Math.random() * toplamStake;
     for (const v of VALIDATORS) return (rastgele -= v.stake) < 0 ? v : null || v;

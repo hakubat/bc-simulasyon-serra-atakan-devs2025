@@ -1,0 +1,57 @@
+[
+    {
+        "index": 0,
+        "timestamp": "01/01/2025",
+        "data": "Genesis Block",
+        "previousHash": "0",
+        "validator": "Sistem",
+        "nonce": 0,
+        "hash": "2170f16fd7d490ba9949c3a773733eef7378428581b84dbb89062b11824c211a"
+    },
+    {
+        "index": 1,
+        "timestamp": "11/28/2025, 3:01:45 PM",
+        "data": {
+            "txId": "Y90C0Q8RE",
+            "gonderen": "Atakan (Trader)",
+            "alici": "Liquidity Pool (AMM)",
+            "miktar": 1234567,
+            "birim": "ITÜCOIN (SOLD)"
+        },
+        "previousHash": "2170f16fd7d490ba9949c3a773733eef7378428581b84dbb89062b11824c211a",
+        "validator": "DEX Contract",
+        "nonce": 0,
+        "hash": "f072bd5d99e97539def1718f125d8aba602576845f53e12d32f7d6caae7fb7ae"
+    },
+    {
+        "index": 2,
+        "timestamp": "11/28/2025, 3:01:56 PM",
+        "data": {
+            "txId": "DU3L6V3KR",
+            "gonderen": "Atakan (Trader)",
+            "alici": "Liquidity Pool (AMM)",
+            "miktar": 2345678965432,
+            "birim": "ITÜCOIN (SOLD)"
+        },
+        "previousHash": "f072bd5d99e97539def1718f125d8aba602576845f53e12d32f7d6caae7fb7ae",
+        "validator": "DEX Contract",
+        "nonce": 0,
+        "hash": "5c428370d47473713af970737fd8bc736a50d43029e80db093d3228767b57270"
+    },
+    {
+        "index": 3,
+        "timestamp": "11/28/2025, 3:02:06 PM",
+        "data": {
+            "txId": "MW4OOZZ9V",
+            "zaman": "3:02:05 PM",
+            "gonderen": "Atakan Kubat",
+            "alici": "12",
+            "miktar": 1000,
+            "birim": "USDT"
+        },
+        "previousHash": "5c428370d47473713af970737fd8bc736a50d43029e80db093d3228767b57270",
+        "validator": "Atakan Kubat",
+        "nonce": 0,
+        "hash": "2f44fb01e98756a81958b03dd2843723f9b223350f8cae8b23e9ff23af29ef62"
+    }
+]
